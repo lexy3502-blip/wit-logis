@@ -98,8 +98,8 @@ async function search() {
   const data = await res.json();
 
   const found = data.find(row => 
-    row["연락처"] && row["연락처"].includes(phone)
-  );
+  row["연락처"] && row["연락처"].replace(/[^0-9]/g, "").endsWith(phone)
+);
 
   const box = document.getElementById("result");
 
