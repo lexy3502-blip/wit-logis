@@ -51,10 +51,6 @@ body {
   color:#fff;
   border:none;
   cursor:pointer;
-  transition:0.15s;
-}
-.btn:active {
-  transform:scale(0.96);
 }
 .result {
   margin:20px;
@@ -86,9 +82,8 @@ body {
 
 <script>
 
-const SHEET_ID = "여기에_구글시트_ID_입력";
-
-const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+// ✅ 여기만 너 시트 연결
+const URL = "https://opensheet.elk.sh/1IOxOChst2mSW6F6bppPFjQEMT0PXNRi5slv91v15eDE/정산서";
 
 async function search() {
 
@@ -100,17 +95,22 @@ async function search() {
   }
 
   const res = await fetch(URL);
-  const text = await res.text();
+  const data = await res.json();
 
-  const rows = text.split("\n").map(r => r.split(","));
-
-  let found = rows.find((r, i) => i > 0 && r.includes(phone));
+  const found = data.find(row => 
+    row["연락처"] && row["연락처"].includes(phone)
+  );
 
   const box = document.getElementById("result");
 
   if (found) {
     box.style.display = "block";
-    box.innerHTML = `<h3>${found[1]}</h3><p>정산금액: ${Number(found[2] || 0).toLocaleString()}원</p>`;
+    box.innerHTML = `
+      <h3>${found["사업주 성명"] || "-"}</h3>
+      <p>사업자 상호: ${found["사업자 상호"] || "-"}</p>
+      <p>차량번호: ${found["차량번호"] || "-"}</p>
+      <p>정산금액: ${Number(found["운송료"] || 0).toLocaleString()}원</p>
+    `;
   } else {
     box.style.display = "block";
     box.innerHTML = "조회 결과 없음";
