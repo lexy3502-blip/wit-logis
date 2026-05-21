@@ -11,47 +11,51 @@ body {
   font-family:sans-serif;
   background:#f3f5f8;
 }
+
 .container {
   max-width:480px;
   margin:auto;
-  min-height:100vh;
   background:#fff;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
 }
-.hero {
-  margin:20px;
-  padding:25px;
-  border-radius:20px;
-  background:#0d2a4a;
-  color:#fff;
-  text-align:center;
+
+/* 상단 이미지 */
+.hero img {
+  width:100%;
+  display:block;
 }
+
+/* 입력 영역 */
 .form-box {
   margin:20px;
-  padding:25px;
-  border-radius:20px;
+  padding:20px;
+  border-radius:15px;
   background:#fff;
   box-shadow:0 5px 15px rgba(0,0,0,0.1);
+  text-align:center;
 }
-.input, .btn {
+
+.input {
   width:100%;
   height:50px;
-  border-radius:12px;
-  font-size:16px;
-}
-.input {
+  border-radius:10px;
   border:1px solid #ddd;
-  margin-bottom:10px;
   padding:0 10px;
+  font-size:16px;
+  margin-bottom:10px;
 }
+
 .btn {
+  width:100%;
+  height:50px;
+  border:none;
+  border-radius:10px;
   background:#0d2a4a;
   color:#fff;
-  border:none;
+  font-size:16px;
   cursor:pointer;
 }
+
+/* 결과 */
 .result {
   margin:20px;
   padding:20px;
@@ -60,51 +64,59 @@ body {
   display:none;
 }
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-<div class="hero">
-  <h2>(주) 위트로지스</h2>
-  <p>운송료 정산 조회</p>
-</div>
+  <!-- 🔥 너가 올린 이미지 -->
+  <div class="hero">
+    <img src="조회화면2.png">
+  </div>
 
-<div class="form-box">
-  <input id="phone" maxlength="4" class="input" placeholder="전화번호 뒤 4자리">
-  <button class="btn" onclick="search()">조회하기</button>
-</div>
+  <!-- 입력 -->
+  <div class="form-box">
+    <input id="phone" maxlength="4" class="input" placeholder="전화번호 뒤 4자리">
+    <button class="btn" onclick="search()">조회하기</button>
+  </div>
 
-<div id="result" class="result"></div>
+  <!-- 결과 -->
+  <div id="result" class="result"></div>
 
 </div>
 
 <script>
 
-// ✅ 여기만 너 시트 연결
+// 🔥 구글시트 연결 (그대로 사용)
 const URL = "https://opensheet.elk.sh/1IOxOChst2mSW6F6bppPFjQEMT0PXNRi5slv91v15eDE/정산서";
 
 async function search() {
 
-  const phone = document.getElementById("phone").value;
+  const phone = document.getElementById("phone").value.trim();
 
   if (phone.length !== 4) {
-    alert("4자리 입력해주세요");
+    alert("전화번호 뒤 4자리 입력해주세요");
     return;
   }
 
   const res = await fetch(URL);
   const data = await res.json();
 
-  const found = data.find(row => 
-  row["연락처"] && row["연락처"].replace(/[^0-9]/g, "").endsWith(phone)
-);
+  // 🔥 컬럼 자동 찾기 (핵심 해결)
+  const found = data.find(row => {
+    const key = Object.keys(row).find(k => k.includes("연락처"));
+    const value = row[key];
+
+    return value && value.replace(/[^0-9]/g, "").endsWith(phone);
+  });
 
   const box = document.getElementById("result");
 
   if (found) {
     box.style.display = "block";
+
     box.innerHTML = `
       <h3>${found["사업주 성명"] || "-"}</h3>
       <p>사업자 상호: ${found["사업자 상호"] || "-"}</p>
@@ -113,7 +125,7 @@ async function search() {
     `;
   } else {
     box.style.display = "block";
-    box.innerHTML = "조회 결과 없음";
+    box.innerHTML = "<b>조회 결과 없음</b>";
   }
 }
 
